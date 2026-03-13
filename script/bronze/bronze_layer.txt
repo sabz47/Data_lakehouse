@@ -1,30 +1,56 @@
-Read From CSV and Write Silver Table
-load "cust_info.csv"
+Define Ingestion Configuration
 
-df = spark.read.option("header", "true").option("inferSchema", "true").csv('/Volumes/workspace/bronze/raw_sources/source_crm/cust_info.csv', header=True)
-df.write.mode("overwrite").saveAsTable("workspace.bronze.crm_cust_info")
+INGESTION_CONFIG = [
+    {
+        "source": "crm",
+        "path": "/Volumes/workspace/bronze/raw_sources/source_crm/cust_info.csv",
+        "table": "crm_cust_info"
+    },
+    {
+        "source": "crm",
+        "path": "/Volumes/workspace/bronze/raw_sources/source_crm/prd_info.csv",
+        "table": "crm_prd_info"
+    },
+    {
+        "source": "crm",
+        "path": "/Volumes/workspace/bronze/raw_sources/source_crm/sales_details.csv",
+        "table": "crm_sales_details"
+    },
+    {
+        "source": "erp",
+        "path": "/Volumes/workspace/bronze/raw_sources/source_erp/CUST_AZ12.csv",
+        "table": "erp_cust_az12"
+    },
+    {
+        "source": "erp",
+        "path": "/Volumes/workspace/bronze/raw_sources/source_erp/LOC_A101.csv",
+        "table": "erp_loc_a101"
+    },
+    {
+        "source": "erp",
+        "path": "/Volumes/workspace/bronze/raw_sources/source_erp/PX_CAT_G1V2.csv",
+        "table": "erp_px_cat_g1v2"
+    }
+]
+
      
-load "prd_info.csv"
+Ingest Files into Bronze Tables
 
-df = spark.read.option("header", "true").option("inferSchema", "true").csv('/Volumes/workspace/bronze/raw_sources/source_crm/prd_info.csv', header=True)
-df.write.mode("overwrite").saveAsTable("workspace.bronze.crm_prd_info")
-     
-load "sales_details.csv"
+%python
 
-df = spark.read.option("header", "true").option("inferSchema", "true").csv('/Volumes/workspace/bronze/raw_sources/source_crm/sales_details.csv', header=True)
-df.write.mode("overwrite").saveAsTable("workspace.bronze.crm_sales_details")
-     
-load "CUST_AZ12.csv"
+for item in INGESTION_CONFIG:
+    print(f"Ingesting {item['source']} → workspace.bronze.{item['table']}")
 
-df = spark.read.option("header", "true").option("inferSchema", "true").csv('/Volumes/workspace/bronze/raw_sources/source_erp/CUST_AZ12.csv', header=True)
-df.write.mode("overwrite").saveAsTable("workspace.bronze.erp_cust_az12")
-     
-load "LOC_A101.csv"
+    df = (
+        spark.read
+             .option("header", "true")
+             .option("inferSchema", "true")
+             .csv(item["path"])
+    )
 
-df = spark.read.option("header", "true").option("inferSchema", "true").csv('/Volumes/workspace/bronze/raw_sources/source_erp/LOC_A101.csv', header=True)
-df.write.mode("overwrite").saveAsTable("workspace.bronze.erp_loc_a101")
-     
-load "PX_CAT_G1V2.csv"
-
-df = spark.read.option("header", "true").option("inferSchema", "true").csv('/Volumes/workspace/bronze/raw_sources/source_erp/PX_CAT_G1V2.csv', header=True)
-df.write.mode("overwrite").saveAsTable("workspace.bronze.erp_px_cat_g1v2")
+    (
+        df.write
+          .mode("overwrite")
+          .format("delta")
+          .saveAsTable(f"workspace.bronze.{item['table']}")
+    )
