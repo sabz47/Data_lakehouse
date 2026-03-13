@@ -19,7 +19,7 @@ Characteristics of this layer:
 Data is stored as-is with no transformation, Maintains historical raw data, Provides data traceability, Serves as the single source of truth
 The Bronze layer allows reprocessing of data if transformation logic changes in later stages.
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
-2. Silver Layer – Data Cleaning and Transformation
+**2. Silver Layer – Data Cleaning and Transformation**
 
 The Silver layer focuses on data quality improvement and transformation.
 In this stage, the raw data from the Bronze layer is processed to create clean, standardized, and structured datasets.
